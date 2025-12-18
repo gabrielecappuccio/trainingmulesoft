@@ -63,8 +63,8 @@
 				<configuration>
 					<compilerArgs>
 						<arg>-parameters</arg>
-						<args>-parameters</args>
 					</compilerArgs>
+					<source>1.8</source>
 					<target>1.8</target>
 				</configuration>
 			</plugin>
