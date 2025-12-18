@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit-soap="http://www.mulesoft.org/schema/mule/apikit-soap" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/apikit-soap http://www.mulesoft.org/schema/mule/apikit-soap/current/mule-apikit-soap.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+<mule xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting" xmlns:java="http://www.mulesoft.org/schema/mule/java" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit-soap="http://www.mulesoft.org/schema/mule/apikit-soap" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/apikit-soap http://www.mulesoft.org/schema/mule/apikit-soap/current/mule-apikit-soap.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/java/current/mule-java.xsd
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd">
     <http:listener-config name="api-httpListenerConfig">
         <http:listener-connection host="0.0.0.0" port="${http.port}"/>
     </http:listener-config>
@@ -29,6 +31,64 @@
     </flow>
     <flow name="sayHello:\soapkit-config">
         <logger level="INFO" doc:name="Logger" doc:id="f9b5aadf-4059-4570-840c-afc884fdecad" message="#[%dw 2.0&#10;output application/json&#10;---&#10;payload]"/>
+		<java:invoke-static method="invokeStatic()" doc:name="Invoke static" doc:id="f4c7cf39-5bb6-402d-a9eb-95be1c092d6a" class="codeJava.CodeJava" target="invokeStaticNoArgs"/>
+		<logger level="INFO" doc:name="Logger" doc:id="77ca18bd-9aa4-4057-9c69-5c25e02effd3" message="#[vars.invokeStaticNoArgs]"/>
+		<java:invoke-static method="invokeStaticTwoArgs(java.lang.String,java.lang.String)" doc:name="Invoke static" doc:id="c5a00f64-2562-4aba-bfb8-42ff592f6e2c" class="codeJava.CodeJava" target="strConcatenate">
+			<java:args ><![CDATA[#[{
+	"strArg1" : payload.body.SayHelloRequest.firstName,
+	"strArg2" : "Giga"
+}]]]></java:args>
+		</java:invoke-static>
+		<logger level="INFO" doc:name="Logger" doc:id="9cfd4761-bc07-4e88-a328-4ecabbbd2de1" message="#[vars.strConcatenate]"/>
+		<ee:transform doc:name="Transform Message import Java Code" doc:id="7b1b245e-0f8b-4c1b-8105-d9e166a9a05f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+import java!codeJava::CodeJava
+---
+{
+	"key" : CodeJava::invokeStaticOneArg(10)
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="344351c1-70d6-48e3-964a-87c943cee098" message="#[%dw 2.0&#10;output application/json&#10;---&#10;payload]"/>
+		<java:new constructor="CodeJava()" doc:name="New" doc:id="9d6626a1-0176-4f9c-93a1-1a6bc58c06cb" class="codeJava.CodeJava" target="DefaultConstructor"/>
+		<java:invoke method="invoke()" doc:name="Invoke" doc:id="e7c56b78-c825-4899-b2ba-64cde9448060" instance="#[vars.DefaultConstructor]" class="codeJava.CodeJava" target="result1"/>
+		<logger level="INFO" doc:name="Logger" doc:id="a8fd7288-c4cf-444f-9372-30b04c973914" message="#[vars.result1]"/>
+		<java:new constructor="CodeJava(java.lang.String,java.lang.String)" doc:name="New" doc:id="79978037-003c-4177-a526-445b4a649c14" class="codeJava.CodeJava" target="ConstructorTwoArgs">
+			<java:args ><![CDATA[#[{
+	"output1" : vars.invokeStaticNoArgs,
+	"output2" : vars.strConcatenate
+}]]]></java:args>
+		</java:new>
+		<java:invoke doc:name="Invoke" doc:id="90cae4f6-be09-4216-a4fd-6f4f45659177" instance="#[vars.ConstructorTwoArgs]" class="codeJava.CodeJava" method="invokeOneArg(java.lang.String)">
+			<java:args ><![CDATA[#[{
+	"strArg" : vars.result1
+}]]]></java:args>
+		</java:invoke>
+		<logger level="INFO" doc:name="Logger" doc:id="781b5906-cdf3-4b75-b3a2-a9a7c1886f19" message="#[payload]"/>
+		<scripting:execute engine="Groovy" doc:name="Execute Groovy" doc:id="17ae3ea5-fb65-4152-9f76-4e3b1cb4398f" target="GroovyExpr">
+			<scripting:code ><![CDATA[def lst = [];
+		
+lst.add(0, var1);
+lst.add(1, var2);
+return lst;]]></scripting:code>
+			<scripting:parameters ><![CDATA[#[{
+	"var1" : "Julie",
+	"var2" : "Robert"
+}]]]></scripting:parameters>
+		</scripting:execute>
+		<logger level="INFO" doc:name="Logger" doc:id="5ea43834-4ea3-4791-a582-9f908c8aa605" message="#[vars.GroovyExpr]"/>
+		<scripting:execute engine="python" doc:name="Execute Python" doc:id="43889f79-9dd0-42f7-8fa4-105f2b7044b4" target="PhytonExpr">
+			<scripting:code ><![CDATA[# 'payload' and 'vars' are accessible automatically
+# 'firstName' is a parameter passed from the UI
+full_greeting = "Hello. Your payload was: " + str(payload)
+
+# Assign to 'result' to send it back to the Mule flow
+result = full_greeting.upper()
+]]></scripting:code>
+		</scripting:execute>
+		<logger level="INFO" doc:name="Logger" doc:id="574e1c6b-8dba-48b7-90bd-558dd058b6c8" message="#[vars.PhytonExpr]"/>
 		<ee:transform>
             <ee:message>
                 <ee:set-payload><![CDATA[%dw 2.0
