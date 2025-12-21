@@ -32,7 +32,7 @@ http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mul
     <flow name="sayHello:\soapkit-config">
         <logger level="INFO" doc:name="Logger" doc:id="f9b5aadf-4059-4570-840c-afc884fdecad" message="#[%dw 2.0&#10;output application/json&#10;---&#10;payload]"/>
 		<java:invoke-static method="invokeStatic()" doc:name="Invoke static" doc:id="f4c7cf39-5bb6-402d-a9eb-95be1c092d6a" class="codeJava.CodeJava" target="invokeStaticNoArgs"/>
-		<logger level="INFO" doc:name="Logger" doc:id="77ca18bd-9aa4-4057-9c69-5c25e02effd3" message="Calling the invokeStaticNoArgs : #[vars.invokeStaticNoArgs]"/>
+		<logger level="INFO" doc:name="Logger" doc:id="77ca18bd-9aa4-4057-9c69-5c25e02effd3" message="Call invokeStaticNoArgs : #[vars.invokeStaticNoArgs]"/>
 		<java:invoke-static method="invokeStaticTwoArgs(java.lang.String,java.lang.String)" doc:name="Invoke static" doc:id="c5a00f64-2562-4aba-bfb8-42ff592f6e2c" class="codeJava.CodeJava" target="strConcatenate">
 			<java:args ><![CDATA[#[{
 	"strArg1" : payload.body.SayHelloRequest.firstName,

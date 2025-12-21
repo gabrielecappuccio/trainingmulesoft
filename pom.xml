@@ -43,8 +43,13 @@
 					<cloudHubDeployment>
 						<uri>https://anypoint.mulesoft.com</uri>
 						<muleVersion>${app.runtime}</muleVersion>
+						<!--  
 						<username>gabriele122025</username>
 						<password>Gabriele28</password>
+						-->
+						<connectedAppClientId>f1a20ada583b48c6ba8b430b45c41d5e</connectedAppClientId>
+            			<connectedAppClientSecret>424c01226F5842f6AB56299F70411b1C</connectedAppClientSecret>
+            			<connectedAppGrantType>client_credentials</connectedAppGrantType>						
 						<applicationName>soapservice-dev-app</applicationName>
 						<environment>Sandbox</environment>
 						<region>us-east-1</region>
