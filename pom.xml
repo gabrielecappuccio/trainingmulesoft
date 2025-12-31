@@ -11,7 +11,7 @@
 
 	<name>soapservice</name>
 
-	<description>soapservice for Exchange - mvn deploy -DmuleDeploy - cloudhub2Deployment - 8th version.</description>
+	<description>soapservice for Exchange - mvn deploy -DmuleDeploy - cloudhub2Deployment - 8th version - deploy</description>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
