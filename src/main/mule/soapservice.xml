@@ -1,13 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<mule xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting" xmlns:java="http://www.mulesoft.org/schema/mule/java" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit-soap="http://www.mulesoft.org/schema/mule/apikit-soap" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/apikit-soap http://www.mulesoft.org/schema/mule/apikit-soap/current/mule-apikit-soap.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting" xmlns:java="http://www.mulesoft.org/schema/mule/java" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit-soap="http://www.mulesoft.org/schema/mule/apikit-soap" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/apikit-soap http://www.mulesoft.org/schema/mule/apikit-soap/current/mule-apikit-soap.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/java/current/mule-java.xsd
-http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd">
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
     <http:listener-config name="api-httpListenerConfig">
         <http:listener-connection host="0.0.0.0" port="${http.port}"/>
     </http:listener-config>
     <apikit-soap:config httpStatusVarName="httpStatus" name="soapkit-config" port="Hello_Port" service="Hello_Service" wsdlLocation="example.wsdl"/>
     <configuration-properties doc:name="Configuration properties" doc:id="522fe32a-8010-4cea-9c32-2895d6f71a3d" file="config-dev.yaml" />
-	<flow name="api-main">
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="a835c9fa-db1d-4754-b34e-5eb7772bdf24" >
+		<db:generic-connection url="jdbc:derby:memory:myTestDB;create=true" driverClassName="org.apache.derby.jdbc.EmbeddedDriver" />
+	</db:config>
+	<flow name="api-main" doc:id="f6786fbf-b03b-4606-8072-3222f3de55de">
         <http:listener config-ref="api-httpListenerConfig" path="/Hello_Service/Hello_Port">
             <http:response statusCode="#[attributes.additionalTransportData.statusCode default 200]">
                 <http:body>#[payload]</http:body>
@@ -29,13 +33,52 @@ http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mul
             }]]]></apikit-soap:attributes>
         </apikit-soap:router>
     </flow>
-    <flow name="sayHello:\soapkit-config">
-        <logger level="INFO" doc:name="Logger" doc:id="f9b5aadf-4059-4570-840c-afc884fdecad" message="#[%dw 2.0&#10;output application/json&#10;---&#10;payload]"/>
+    <flow name="sayHello:\soapkit-config" doc:id="29e45143-eac4-4b50-9d2d-1e8f34dc0aae">
+        <logger level="INFO" doc:name="Logger" doc:id="f9b5aadf-4059-4570-840c-afc884fdecad" message="#[%dw 2.0&#10;output application/json&#10;---&#10;payload.body.SayHelloRequest.firstName]"/>
+		<logger level="INFO" doc:name="Logger" doc:id="1d96a933-0891-44f2-95bd-5466b2fbeebb" message="#[%dw 2.0&#10;output application/json&#10;---&#10;attributes]"/>
+		<set-variable value="#[%dw 2.0&#10;output application/json&#10;---&#10;payload]" doc:name="Set Variable" doc:id="c35ba604-3b10-4dee-a209-fe515daf8289" variableName="myPayload"/>
+		<set-variable value="#[%dw 2.0&#10;output application/json&#10;---&#10;attributes.protocolHeaders.id]" doc:name="Set Variable" doc:id="59b5f476-901d-490c-9144-2f36a02618ff" variableName="myId"/>
+		<set-variable value="#[%dw 2.0&#10;output application/json&#10;---&#10;attributes.protocolHeaders.status]" doc:name="Set Variable" doc:id="6881b881-32b5-44c9-ba5c-fae012d72a48" variableName="myStatus"/>
+		<try doc:name="Try" doc:id="d6b79dfa-63e3-4f32-b066-a4dfaccd17dc" >
+			<db:execute-script doc:name="Execute script" doc:id="ea79f2db-9505-404f-8039-d7e508bed427" config-ref="Database_Config">
+			<db:sql><![CDATA[CREATE TABLE STUDENTINFORMATION (
+    STUDENTNAME    VARCHAR(100),
+    STUDENTID      INT PRIMARY KEY NOT NULL, -- Derby requires NOT NULL for Primary Keys
+    STUDENTADDRESS VARCHAR(100),
+    STUDENTSALARY  DECIMAL(10, 2),
+    STUDENTLOCATION VARCHAR(100),
+    STUDENTSTATUS   CHAR(1)
+)]]></db:sql>
+		</db:execute-script>
+			<error-handler >
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="de8e4213-b16f-48b3-8e97-188aff08c30c" type="DB:BAD_SQL_SYNTAX, DB:CONNECTIVITY, DB:QUERY_EXECUTION, DB:RETRY_EXHAUSTED">
+					<logger level="INFO" doc:name="Logger" doc:id="0996cd73-648d-4b52-82c6-4d8b7e19e5b6" message="#[error.detailedDescription]"/>
+				</on-error-continue>
+			</error-handler>
+		</try>
+		<try doc:name="Try" doc:id="ba050253-0ea9-4059-aa8f-2e04ea57db3c" >
+			<db:insert doc:name="Insert" doc:id="cefb30e0-ffc0-4eee-a7fe-67c18a83560f" config-ref="Database_Config">
+			<db:sql><![CDATA[INSERT INTO STUDENTINFORMATION (STUDENTNAME, STUDENTID, STUDENTSTATUS) VALUES (:name, :id, :status)]]></db:sql>
+			<db:input-parameters><![CDATA[#[{ name: vars.myPayload.body.SayHelloRequest.firstName,
+  id: vars.myId,
+  status: vars.myStatus
+}]]]></db:input-parameters>
+		</db:insert>
+			<error-handler >
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="dd3161e9-2251-474b-9245-3de0ca81ab7b" type="DB:BAD_SQL_SYNTAX, DB:CONNECTIVITY, DB:QUERY_EXECUTION, DB:RETRY_EXHAUSTED">
+					<logger level="INFO" doc:name="Logger" doc:id="4006c1de-687c-41ba-8771-407347ae7c23" message="#[error.detailedDescription]"/>
+				</on-error-continue>
+			</error-handler>
+		</try>
+		<db:select doc:name="Select" doc:id="eccf4c18-6940-4af3-9f15-a4f9d0356e81" config-ref="Database_Config">
+			<db:sql ><![CDATA[SELECT * FROM STUDENTINFORMATION]]></db:sql>
+		</db:select>
+		<logger level="INFO" doc:name="Logger" doc:id="3c363682-58d8-41b7-a69f-e06f8005d812" message="#[%dw 2.0&#10;output application/json&#10;---&#10;payload]"/>
 		<java:invoke-static method="invokeStatic()" doc:name="Invoke static" doc:id="f4c7cf39-5bb6-402d-a9eb-95be1c092d6a" class="codeJava.CodeJava" target="invokeStaticNoArgs"/>
 		<logger level="INFO" doc:name="Logger" doc:id="77ca18bd-9aa4-4057-9c69-5c25e02effd3" message="Call invokeStaticNoArgs : #[vars.invokeStaticNoArgs]"/>
 		<java:invoke-static method="invokeStaticTwoArgs(java.lang.String,java.lang.String)" doc:name="Invoke static" doc:id="c5a00f64-2562-4aba-bfb8-42ff592f6e2c" class="codeJava.CodeJava" target="strConcatenate">
 			<java:args ><![CDATA[#[{
-	"strArg1" : payload.body.SayHelloRequest.firstName,
+	"strArg1" : vars.myPayload.body.SayHelloRequest.firstName,
 	"strArg2" : "Giga"
 }]]]></java:args>
 		</java:invoke-static>

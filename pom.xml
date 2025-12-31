@@ -2,19 +2,31 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.mycompany</groupId>
+	<groupId>fb3dd574-a5e2-4ba1-b88b-e008e9c91d20</groupId>
+	<!--  <groupId>fb3dd574-a5e2-4ba1-b88b-e008e9c91d20</groupId> -->
+	<!--  <groupId>fb3dd574-a5e2-4ba1-b88b-e008e9c91d20</groupId> -->
 	<artifactId>soapservice</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
+	<version>2.0.1</version>
 	<packaging>mule-application</packaging>
 
 	<name>soapservice</name>
 
+	<description>soapservice for Exchange - mvn deploy -DmuleDeploy - cloudhub2Deployment</description>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 		<app.runtime>4.10.0</app.runtime>
+
+		<anypoint.username>gabriele122025</anypoint.username>
+		<anypoint.password>Gabriele28</anypoint.password>
+		<anypoint.client_id>608899cf4d37482eb0491ba772c508fb</anypoint.client_id>
+		<anypoint.client_secret>C2f0aE5bF6f849119bE7DCEa250C2dAf</anypoint.client_secret>
+
 		<mule.maven.plugin.version>4.5.3</mule.maven.plugin.version>
+		<tags/>
+		<categories>[]</categories>
+		<fields>[]</fields>
 	</properties>
 
 	<build>
@@ -39,26 +51,47 @@
 							<groupId>org.python</groupId>
 							<artifactId>jython-standalone</artifactId>
 						</sharedLibrary>
+						<sharedLibrary>
+							<groupId>org.apache.derby</groupId>
+							<artifactId>derby</artifactId>
+						</sharedLibrary>
 					</sharedLibraries>
-					<cloudHubDeployment>
+					<!--<cloudHubDeployment>-->
+					<cloudhub2Deployment>
 						<uri>https://anypoint.mulesoft.com</uri>
+						<provider>MC</provider>
 						<muleVersion>${app.runtime}</muleVersion>
-						<!--  
-						<username>gabriele122025</username>
-						<password>Gabriele28</password>
-						-->
-						<connectedAppClientId>f1a20ada583b48c6ba8b430b45c41d5e</connectedAppClientId>
-            			<connectedAppClientSecret>424c01226F5842f6AB56299F70411b1C</connectedAppClientSecret>
-            			<connectedAppGrantType>client_credentials</connectedAppGrantType>						
+						<!-- The <server> tag points to an entry in your settings.xml -->
+						<!-- <server>anypoint-exchange-v3</server>  -->
+						<!--
+						<username>${anypoint.username}</username>
+						<password>${anypoint.password}</password>
+						 -->
+						<connectedAppClientId>${anypoint.client_id}</connectedAppClientId>
+						<connectedAppClientSecret>${anypoint.client_secret}</connectedAppClientSecret>
+						<connectedAppGrantType>client_credentials</connectedAppGrantType>
 						<applicationName>soapservice-dev-app</applicationName>
 						<environment>Sandbox</environment>
-						<region>us-east-1</region>
+						<target>Cloudhub-US-East-2</target>
+						<!-- <region>us-east-1</region>-->
+						<replicas>1</replicas>
+						<vCores>0.1</vCores>
+						<!--
 						<workers>1</workers>
 						<workerType>MICRO</workerType>
+						 -->
+						<deploymentSettings>
+							<generateDefaultPublicUrl>true</generateDefaultPublicUrl>
+							<updateStrategy/>
+						</deploymentSettings>
 						<properties>
+							<mule.env>sandbox</mule.env>
+							<anypoint.platform.visualizer.layer>System</anypoint.platform.visualizer.layer>
 							<http.port>8081</http.port>
 						</properties>
-					</cloudHubDeployment>
+					</cloudhub2Deployment>
+					<!--</cloudHubDeployment>-->
+					<classifier>---- select project type ----</classifier>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -68,6 +101,7 @@
 				<configuration>
 					<compilerArgs>
 						<arg>-parameters</arg>
+						<args>-parameters</args>
 					</compilerArgs>
 					<source>1.8</source>
 					<target>1.8</target>
@@ -96,12 +130,6 @@
 			<classifier>mule-plugin</classifier>
 		</dependency>
 		<dependency>
-			<groupId>org.mule.module</groupId>
-			<artifactId>mule-java-module</artifactId>
-			<version>2.0.3</version>
-			<classifier>mule-plugin</classifier>
-		</dependency>
-		<dependency>
 			<groupId>org.mule.modules</groupId>
 			<artifactId>mule-scripting-module</artifactId>
 			<version>2.1.1</version>
@@ -116,6 +144,23 @@
 			<groupId>org.python</groupId>
 			<artifactId>jython-standalone</artifactId>
 			<version>2.7.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mule.module</groupId>
+			<artifactId>mule-java-module</artifactId>
+			<version>2.0.4</version>
+			<classifier>mule-plugin</classifier>
+		</dependency>
+		<dependency>
+			<groupId>org.mule.connectors</groupId>
+			<artifactId>mule-db-connector</artifactId>
+			<version>1.15.0</version>
+			<classifier>mule-plugin</classifier>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.derby</groupId>
+			<artifactId>derby</artifactId>
+			<version>10.14.2.0</version>
 		</dependency>
 	</dependencies>
 
@@ -153,4 +198,14 @@
 		</pluginRepository>
 	</pluginRepositories>
 
+	<!--
+<distributionManagement>
+	<repository>
+		<id>anypoint-exchange-v3</id>
+		<name>Anypoint Exchange</name>
+		<url>https://maven.anypoint.mulesoft.com/api/v3/organizations/fb3dd574-a5e2-4ba1-b88b-e008e9c91d20/maven</url>
+		<layout>default</layout>
+	</repository>
+</distributionManagement>
+-->
 </project>

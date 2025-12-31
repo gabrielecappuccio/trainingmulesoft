@@ -1,0 +1,13 @@
+{
+  "headers": {
+    
+  },
+  "attachments": {
+    
+  },
+  "body": {
+    "SayHelloRequest": {
+      "firstName": "Ted Striker"
+    }
+  }
+}
